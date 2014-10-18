@@ -1,0 +1,128 @@
+---
+- name: Install needed packages
+  apt: name={{ item }}
+       state=present
+  with_items:
+    - apache2
+    - libapache2-mod-php5
+    - libgd2-xpm-dev
+    - postfix
+    - apache2-utils
+    - php5-gd
+  sudo: yes
+
+- name: Create nagios group
+  group: name=nagios
+         state=present
+  sudo: yes
+
+- name: Create nagcmd group
+  group: name=nagcmd
+         state=present
+  sudo: yes
+
+- name: Create nagios user
+  user: name=nagios
+        groups=nagios,nagcmd
+  sudo: yes
+
+- name: Add www-data to nagcmd group
+  user: name=www-data
+        groups=nagcmd
+  sudo: yes
+
+- name: Create /usr/local/nagios
+  file: path=/usr/local/nagios
+        state=directory
+        mode=755
+        owner=nagios
+        group=nagios
+  sudo: yes
+
+- name: Get nagios-4.0.8.tar.gz
+  get_url: url=http://prdownloads.sourceforge.net/sourceforge/nagios/nagios-4.0.8.tar.gz
+           dest=/home/nagios
+  sudo: yes
+
+- name: Get nagios-plugins-2.0.3.tar.gz
+  get_url: url=http://www.nagios-plugins.org/download/nagios-plugins-2.0.3.tar.gz
+           dest=/home/nagios
+  sudo: yes
+
+- name: Unarchive nagios
+  unarchive: src=/home/nagios/nagios-4.0.8.tar.gz
+             dest=/home/nagios
+             copy=no
+             creates=/home/nagios/nagios-4.0.8
+  sudo: yes
+
+- name: Unarchive nagios-plugins
+  unarchive: src=/home/nagios/nagios-plugins-2.0.3.tar.gz
+             dest=/home/nagios
+             copy=no
+             creates=/home/nagios/nagios-plugins-2.0.3
+  sudo: yes
+
+- name: Configure nagios
+  shell: cd /home/nagios/nagios-4.0.8;
+         ./configure --with-nagios-group=nagios --with-command-group=nagcmd --with-mail=/usr/sbin/sendmail --with-httpd_conf=/etc/apache2/conf-available 
+         creates=/home/nagios/nagios-4.0.8/Makefile
+  sudo: yes
+
+- name: make/make install (nagios)
+  shell: cd /home/nagios/nagios-4.0.8;
+         make all;
+         make install;
+         make install-init;
+         make install-config;
+         make install-commandmode;
+         make install-webconf 
+         creates=/usr/local/nagios/libexec
+  sudo: yes
+  notify:
+    - restart apache2
+    - restart nagios
+
+- name: Add line to /etc/apache2/sites-enabled/000-default.conf
+  lineinfile: dest=/etc/apache2/sites-enabled/000-default.conf
+              line="Include conf-available/nagios.conf"
+  sudo: yes
+  notify:
+    - restart apache2
+    - restart nagios
+
+- name: Create htpasswd
+  shell: htpasswd -b -c /usr/local/nagios/etc/htpasswd.users nagiosadmin {{ htpasswd }};
+         touch /opt/htpasswd.ansible
+         creates=/opt/htpasswd.ansible
+  sudo: yes
+  notify:
+    - restart apache2
+    - restart nagios
+
+- name: Enable cgi module
+  shell: a2enmod cgi;
+         touch /opt/enablecgi.ansible
+         creates=/opt/enablecgi.ansible
+  sudo: yes
+
+- name: Configure Nagios plugins
+  shell: cd /home/nagios/nagios-plugins-2.0.3;
+         ./configure --with-nagios-user=nagios --with-nagios-group=nagios
+         creates=/home/nagios/nagios-plugins-2.0.3/Makefile  
+  sudo: yes
+
+- name: make/make install (nagios plugins)
+  shell: cd /home/nagios/nagios-plugins-2.0.3;
+         make;
+         make install;
+         touch /opt/nagiosplugins.ansible
+         creates=/opt/nagiosplugins.ansible
+  sudo: yes
+
+- name: Ensure nagios and apache are running
+  service: name={{ item }} state=started
+  with_items:
+    - nagios
+    - apache2
+  sudo: yes
