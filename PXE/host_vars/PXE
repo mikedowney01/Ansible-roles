@@ -1,0 +1,19 @@
+---
+#Ansible variables
+ansible_ssh_host: 10.1.2.4
+ansible_ssh_port: 22
+#ansible_ssh_private_key_file:
+#ansible_ssh_user:
+
+#DHCP configuration
+subnet: 10.1.2.0
+start_ip: 10.1.2.25
+end_ip: 10.1.2.99
+broadcast: 10.1.2.255
+router: 10.1.2.3
+domain_name: example.org
+netmask: 255.255.255.0
+
+#User cofiguration for clients
+username: administrator
+password: changeme

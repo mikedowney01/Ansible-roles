@@ -1,0 +1,8 @@
+---
+- name: restart tftp
+  service: name=tftpd-hpa state=restarted
+  sudo: yes
+
+- name: restart dhcp
+  service: name=isc-dhcp-server state=restarted
+  sudo: yes
