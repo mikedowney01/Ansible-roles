@@ -1,0 +1,16 @@
+---
+- name: Get ossec-hids-2.8.2.tar.gz
+  get_url: url=http://www.ossec.net/files/ossec-hids-2.8.2.tar.gz
+           dest=/opt/
+
+- name: Unarchive ossec
+  unarchive: src=/opt/ossec-hids-2.8.2.tar.gz
+             dest=/opt/
+             copy=no
+             creates=/opt/ossec-hids-2.8.2
+
+- name: Copy preloaded-vars.conf
+  template: src=preloaded-vars.conf dest=/opt/ossec-hids-2.8.2/etc/preloaded-vars.conf backup=yes
+
+- name: Install OSSEC
+  shell: /opt/ossec-hids-2.8.2/install.sh creates=/var/ossec

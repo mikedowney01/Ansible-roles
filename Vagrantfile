@@ -8,10 +8,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.box = "trusty"
   config.vm.box_url = "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
+  config.vm.provision "shell", inline: "sudo apt-get update"
   config.vm.provision "ansible" do |ansible|
   config.vm.network "private_network", ip: "10.1.2.3"
-    ansible.playbook = "site.yml"
-    ansible.inventory_path = "hosts"
+    ansible.playbook = "playbook-example.yml"
+    ansible.inventory_path = "inventory"
     ansible.limit = 'all'
   end
 end

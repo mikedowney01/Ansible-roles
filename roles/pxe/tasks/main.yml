@@ -5,10 +5,9 @@
     - tftpd-hpa
     - inetutils-inetd
     - isc-dhcp-server
-  sudo: yes
 
 # To use an iso on the local machine, copy the iso to the "files" directory
-# and uncomment to following play
+# and uncomment the following play
 #- name: copy ubuntu iso to server
 #  copy: src=ubuntu-14.04.1-server-amd64.iso 
 #        dest=~/
@@ -17,19 +16,16 @@
 - name: download ubuntu 14.04 server iso
   get_url: url=http://releases.ubuntu.com/14.04/ubuntu-14.04.1-server-amd64.iso 
            dest=/home/vagrant/
-  sudo: yes
 
 - name: mount iso
   shell: mount -o loop /home/vagrant/ubuntu-14.04.1-server-amd64.iso /mnt 
          creates=/mnt/ubuntu
-  sudo: yes
 
 - name: copy files from mounted .iso
   shell: mkdir /var/www/html/ubuntu;
          cp -rf /mnt/* /var/www/html/ubuntu/;
          cp -rf /mnt/install/netboot/* /var/lib/tftpboot/
          creates=/var/www/html/ubuntu
-  sudo: yes
 
 - name: copy tftpd-hpa
   copy: src=tftpd-hpa
@@ -38,7 +34,6 @@
         group=root
         mode=644
         backup=yes
-  sudo: yes
   notify:
     - restart tftp
 
@@ -49,7 +44,6 @@
             group=root
             mode=444
             backup=yes
-  sudo: yes
 
 - name: copy dhcpd.conf
   template: src=dhcpd.conf
@@ -58,7 +52,6 @@
             group=root
             mode=644
             backup=yes
-  sudo: yes
   notify:
     - restart dhcp
 
@@ -66,16 +59,13 @@
   template: src=preseed.cfg
             dest=/var/www/html/ubuntu/install/
             backup=yes
-  sudo: yes
 
 - name: copy ks.cfg
   template: src=ks.cfg
             dest=/var/www/html/ubuntu/install/
             backup=yes
-  sudo: yes
 
 - name: add line to initd.conf
   lineinfile: dest=/etc/inetd.conf
               state=present
               line="tftp    dgram   udp    wait    root    /usr/sbin/in.tftpd /usr/sbin/in.tftpd -s /var/lib/tftpboot"
-  sudo: yes

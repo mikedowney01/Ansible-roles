@@ -1,4 +1,5 @@
 ---
-- hosts: nagios
+- hosts: test
   roles:
     - nagios
+  sudo: yes
