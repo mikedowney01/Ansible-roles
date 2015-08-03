@@ -4,18 +4,10 @@
        state=present
   with_items:
     - apache2
-    - mysql-server
-    - python-mysqldb
     - php5
     - php5-mysql
     - libapache2-mod-php5
     - curl
-
-- name: Update MySQL Root Password
-  mysql_user: name={{ mysqlrootuser }} host={{ DB_HOST }} password={{ mysqlrootpass }}
-
-- name: Copy the my.cnf
-  template: src=my.cnf dest=/root/.my.cnf owner=root mode=0600
 
 - name: Enable mod_rewrite module
   shell: a2enmod mod_rewrite;
@@ -31,16 +23,6 @@
              dest=/opt
              copy=no
              creates=/opt/wordpress
-
-- name: Create database
-  mysql_db: name={{ DB_NAME }}
-            state=present
-
-- name: Create user and give privs
-  mysql_user: name={{ DB_USER }}
-              password={{ DB_PASSWORD }}
-              state=present
-              priv='{{ DB_NAME }}.*:ALL'
 
 - name: Copy wp-config.php
   template: src=wp-config.php

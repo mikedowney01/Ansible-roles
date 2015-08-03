@@ -1,0 +1,7 @@
+---
+DB_NAME: testdb
+DB_USER: testuser
+DB_PASSWORD: changeme
+DB_HOST: localhost
+mysqlrootuser: root
+mysqlrootpass: changeme
