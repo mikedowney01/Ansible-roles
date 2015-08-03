@@ -1,0 +1,15 @@
+---
+DB_NAME: testdb
+DB_USER: testuser
+DB_PASSWORD: changeme
+DB_HOST: localhost
+AUTH_KEY: temp_auth_key
+SECURE_AUTH_KEY: temp_secure_auth_key
+LOGGED_IN_KEY: temp_logged_in_key
+NONCE_KEY: temp_nonce_key
+AUTH_SALT: temp_auth_salt
+SECURE_AUTH_SALT: temp_secure_auth_salt
+LOGGED_IN_SALT: temp_logged_in_salt
+NONCE_SALT: temp_nonce_salt
+mysqlrootuser: root
+mysqlrootpass: changeme

@@ -1,0 +1,61 @@
+---
+- name: Install packages
+  apt: name={{ item }}
+       state=present
+  with_items:
+    - apache2
+    - mysql-server
+    - python-mysqldb
+    - php5
+    - php5-mysql
+    - libapache2-mod-php5
+    - curl
+
+- name: Update MySQL Root Password
+  mysql_user: name={{ mysqlrootuser }} host={{ DB_HOST }} password={{ mysqlrootpass }}
+
+- name: Copy the my.cnf
+  template: src=my.cnf dest=/root/.my.cnf owner=root mode=0600
+
+- name: Enable mod_rewrite module
+  shell: a2enmod mod_rewrite;
+         touch /opt/mod_rewrite.ansible
+         creates=/opt/mod_rewrite.ansible
+
+- name: Get the latest version of wordpress
+  get_url: url=https://wordpress.org/latest.tar.gz
+           dest=/opt
+
+- name: unarchive wordpress
+  unarchive: src=/opt/latest.tar.gz
+             dest=/opt
+             copy=no
+             creates=/opt/wordpress
+
+- name: Create dayabase
+  mysql_db: name={{ DB_NAME }}
+            state=present
+
+- name: Create user and give privs
+  mysql_user: name={{ DB_USER }}
+              password={{ DB_PASSWORD }}
+              state=present
+              priv='{{ DB_NAME }}.*:ALL'
+
+- name: Copy wp-config.php
+  template: src=wp-config.php
+            dest=/var/www/html
+
+- name: Remove wp-config-sample.php
+  file: path=/opt/wordpress/wp-config-sample.php
+        state=absent
+
+- name: Copy wordpress files to root path
+  shell: cp -rf /opt/wordpress/* /var/www/html/;
+         rm /var/www/html/index.html;
+         touch /opt/copy.ansible
+         creates=/opt/copy.ansible
+
+- name: restart apache
+  service: name=apache2
+           state=restarted
