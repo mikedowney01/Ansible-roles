@@ -32,7 +32,7 @@
              copy=no
              creates=/opt/wordpress
 
-- name: Create dayabase
+- name: Create database
   mysql_db: name={{ DB_NAME }}
             state=present
 
