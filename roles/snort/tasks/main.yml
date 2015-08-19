@@ -68,3 +68,17 @@
 
 - name: Create snort user
   user: name=snort comment=SNORT_IDS group=snort createhome=no shell=/sbin/nologin
+
+- name: Create directories for Snort configuration
+  file: path={{ item }} state=directory owner=snort group=snort mode=5775
+  with_items:
+    - /etc/snort/rules
+    - /etc/snort/preproc_rules
+    - /var/log/snort
+    - /usr/local/lib/snort_dynamicrules
+
+- name: Create rules files for Snort
+  file: path={{ item }} state=touch owner=snort group=snort
+  with_items:
+    - /etc/snort/rules/white_list.rules
+    - /etc/snort/rules/local.rules
