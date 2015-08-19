@@ -1,0 +1,70 @@
+---
+- name: Install packages
+  apt: name={{ item }} state=present
+  with_items:
+    - build-essential
+    - ethtool
+    - libpcap-dev
+    - libpcre3-dev
+    - libdumbnet-dev
+    - bison
+    - flex
+    - zlib1g-dev
+
+- name: Disable generic receive offload
+  shell: ethtool -K eth0 gro off;
+         touch /opt/ethtool.ansible
+         creates=/opt/ethtool.ansible
+
+- name: Create directory for source files
+  file: path=/root/snort_src state=directory owner=root group=root mode=700
+
+- name: Get daq-2.0.6.tar.gz
+  get_url: url=https://www.snort.org/downloads/snort/daq-2.0.6.tar.gz
+           dest=/root/snort_src/
+
+- name: Get snort-2.9.7.5.tar.gz
+  get_url: url=https://www.snort.org/downloads/snort/snort-2.9.7.5.tar.gz
+           dest=/root/snort_src/
+
+- name: Unarchive daq-2.0.6
+  unarchive: src=/root/snort_src/daq-2.0.6.tar.gz
+             dest=/root/snort_src/
+             copy=no
+
+- name: install daq-2.0.6
+  shell: cd /root/snort_src/daq-2.0.6/;
+         ./configure;
+         make;
+         make install;
+         touch /opt/daq.ansible
+         creates=/opt/daq.ansible
+
+- name: Unarchive snort-2.9.7.5
+  unarchive: src=/root/snort_src/snort-2.9.7.5.tar.gz
+         dest=/root/snort_src/
+         copy=no
+
+- name: Install snort-2.9.7.5
+  shell: cd /root/snort_src/snort-2.9.7.5/;
+         ./configure --enable-sourcefire;
+         make;
+         make install;
+         touch /opt/snort.ansible
+         creates=/opt/snort.ansible
+
+- name: Update shared libraries
+  shell: ldconfig;
+         touch /opt/ldconfig.ansible
+         creates=/opt/ldconfig.ansible
+
+- name: Create symlink for snort
+  file: src=/usr/local/bin/snort
+        dest=/usr/sbin/snort
+        state=link
+
+- name: Create snort group
+  group: name=snort state=present
+
+- name: Create snort user
+  user: name=snort comment=SNORT_IDS group=snort createhome=no shell=/sbin/nologin
