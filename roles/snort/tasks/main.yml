@@ -10,6 +10,10 @@
     - bison
     - flex
     - zlib1g-dev
+    - libmysqlclient-dev
+    - mysql-client
+    - autoconf
+    - libtool
 
 - name: Disable generic receive offload
   shell: ethtool -K eth0 gro off;
@@ -81,4 +85,17 @@
   file: path={{ item }} state=touch owner=snort group=snort
   with_items:
     - /etc/snort/rules/white_list.rules
+    - /etc/snort/rules/black_list.rules
     - /etc/snort/rules/local.rules
+
+- name: Copy map and config files
+  shell: cp /root/snort_src/snort-2.9.7.5/etc/classification.config /etc/snort;
+         cp /root/snort_src/snort-2.9.7.5/etc/reference.config /etc/snort;
+         cp /root/snort_src/snort-2.9.7.5/etc/snort.conf /etc/snort;
+         cp /root/snort_src/snort-2.9.7.5/etc/threshold.conf /etc/snort;
+         cp /root/snort_src/snort-2.9.7.5/etc/gen-msg.map /etc/snort;
+         cp /root/snort_src/snort-2.9.7.5/etc/unicode.map /etc/snort
+         creates=/etc/snort-2.9.7.5/etc/unicode.map
+
+- name: Copy snort.conf
+  template: src=snort.conf dest=/etc/snort/snort.conf backup=yes
