@@ -38,6 +38,9 @@
          touch /opt/copy.ansible
          creates=/opt/copy.ansible
 
+- name: Set correct file attributes for wordpress path
+  file: path=/var/www/html state=directory owner=www-data group=www-data recurse=yes
+
 - name: restart apache
   service: name=apache2
            state=restarted
