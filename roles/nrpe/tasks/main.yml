@@ -1,0 +1,64 @@
+---
+- name: Install libssl-dev
+  apt: name=libssl-dev
+       state=present
+       update_cache=yes
+
+- name: Create link for ssl lib
+  shell: ln -s /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/libssl.so
+         creates=/usr/lib/libssl.so
+
+- name: Create nrpe group
+  group: name=nrpe
+         state=present
+
+- name: Create nrpe user
+  user: name=nrpe
+        state=present
+        group=nrpe
+
+- name: Create nagios group
+  group: name=nagios
+         state=present
+
+- name: Create nagios user
+  user: name=nagios
+        state=present
+        group=nrpe
+
+- name: Get nrpe
+  get_url: url=http://sourceforge.net/projects/nagios/files/nrpe-2.x/nrpe-2.15/nrpe-2.15.tar.gz
+           dest=/root/
+
+- name: Unarchive nrpe
+  unarchive: src=/root/nrpe-2.15.tar.gz
+             dest=/root/
+             copy=no
+
+- name: Configure nrpe
+  shell: cd /root/nrpe-2.15;
+         ./configure;
+         make;
+         make install-daemon;
+         touch /opt/nrpe.ansible
+         creates=/opt/nrpe.ansible
+
+- name: Create /usr/local/nagios/etc
+  file: path=/usr/local/nagios/etc
+        state=directory
+        owner=nagios
+        group=nagios
+
+- name: Copy nrpe.conf to /etc/init/
+  copy: src=nrpe.conf
+        dest=/etc/init/
+
+- name: Copy nrpe.cfg
+  copy: src=nrpe.cfg
+        dest=/usr/local/nagios/etc
+        owner=nrpe
+        group=nrpe
+
+- name: start nrpe
+  service: name=nrpe
+           state=started
